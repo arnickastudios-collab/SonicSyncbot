@@ -39,8 +39,12 @@ def search_web(query):
         "num": 5
     }
     try:
-        resp = requests.get(url, params=params)
+        resp = requests.get(url, params=params, timeout=10)
         data = resp.json()
+        
+        # Check for API errors
+        if data.get("error"):
+            return f"Sorry, search API error: {data.get('error')}"
         
         if "answer_box" in data:
             answer = data["answer_box"].get("answer")
@@ -58,7 +62,7 @@ def search_web(query):
             return "\n".join(results)
         return None
     except Exception as e:
-        return None
+        return f"Sorry, search is not available right now. ({str(e)})"
 
 def ask_openrouter(prompt, user_name="User"):
     """AI chat with personalized response using user's name"""
