@@ -60,7 +60,8 @@ def search_web(query):
     except Exception as e:
         return None
 
-def ask_openrouter(prompt):
+def ask_openrouter(prompt, user_name="User"):
+    """AI chat with personalized response using user's name"""
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json"
@@ -68,6 +69,10 @@ def ask_openrouter(prompt):
     data = {
         "model": "openai/gpt-4o-mini",
         "messages": [
+            {
+                "role": "system",
+                "content": f"You are a helpful AI assistant named Sonic Bot, created by Arnicka Studios. You are talking to a user named {user_name}. Be friendly, helpful, and use their name occasionally in your responses."
+            },
             {
                 "role": "user",
                 "content": prompt

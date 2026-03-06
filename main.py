@@ -53,8 +53,24 @@ async def get_city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user_id = update.effective_user.id
 
     db.save_user(user_id, name, city)
-    greeting = utils.generate_greeting(name, city)
-    await update.message.reply_text(greeting)
+    
+    # Welcome message with features - personalized with user's name
+    welcome_message = f"""Welcome to Sonic Bot, {name}! 🎉
+
+I'm your personal AI assistant from Arnicka Studios. Here are my features:
+
+📢 **My Features:**
+• 💬 **AI Chat** - Talk to me about anything!
+• 🌤️ **Weather** - Ask about weather in your city ({city})
+• 🔍 **Web Search** - Search the internet for current info
+• ⏰ **Time** - Get current time
+• 🎤 **Voice Messages** - Use /voice to enable voice responses
+
+Just chat with me normally and I'll help you!
+
+Type anything to start chatting, {name}!"""
+    
+    await update.message.reply_text(welcome_message)
     return ConversationHandler.END
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -69,6 +85,32 @@ async def time_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply = f"The current time is {current_time}"
     await update.message.reply_text(reply)
     await send_voice_message(update, reply)
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Show bot features"""
+    user_data = db.get_user(update.effective_user.id)
+    if user_data:
+        name, city = user_data
+    else:
+        name = "Friend"
+        city = "your city"
+    
+    help_message = f"""📢 **Sonic Bot Features** - Hey {name}!
+
+Here are all the things I can do:
+
+• 💬 **AI Chat** - Just talk to me about anything!
+• 🌤️ **Weather** - Ask "What's the weather?" or "How's the weather in [city]?"
+• 🔍 **Web Search** - Ask "Search for..." or "Find..."
+• ⏰ **Time** - Ask "What's the time?"
+• 🎤 **Voice** - Use /voice to toggle voice responses
+• 📋 **Help** - Use /help to see this message
+
+I was created by **Arnicka Studios**! 🚀
+
+Just chat naturally, {name}!"""
+    
+    await update.message.reply_text(help_message)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -125,8 +167,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(reply)
         await send_voice_message(update, reply)
     else:
-        # AI response
-        reply = utils.ask_openrouter(user_msg)
+        # AI response - personalized with user's name
+        reply = utils.ask_openrouter(user_msg, name)
         await update.message.reply_text(reply)
         await send_voice_message(update, reply)
 
@@ -176,6 +218,9 @@ def main():
     
     # Time command
     app.add_handler(CommandHandler("time", time_command))
+    
+    # Help command
+    app.add_handler(CommandHandler("help", help_command))
 
     # Start web dashboard in a separate thread
     web_thread = threading.Thread(target=webapp.run_web, daemon=True)
